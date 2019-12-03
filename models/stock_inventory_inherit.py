@@ -47,107 +47,88 @@ class StockInvetoryInherit(models.Model):
 	
 	_inherit = 'stock.inventory'
 
-	filename = fields.Binary('Archivo')
-	excel_file = fields.Binary(string='Excel File')
-
-	def return_column_excel(self, data_excel):
-		if data_excel:
-			if data_excel[0]:
-				return data_excel[0]
-
-	def return_column_position(self, data_excel, name_colum):
-		if data_excel:
-			data_column = self.return_column_excel(data_excel)
-
-			if data_column:
-				for x in range(0, len(data_column)):
-					if data_column[x] == name_colum:
-						return x 
-			return -1
-
-
-	def return_product_by_barcode(self, data_excel, pos_barcode, pos_qty):
-		data = []
-		if data_excel:
-			for x in range(1, len(data_excel)):
-				product_barcode = data_excel[x][pos_barcode]
-				product_qty = data_excel[x][pos_qty]
-				vals = {
-				'barcode' : product_barcode,
-				'product_qty' : float(product_qty),
-				'product_id': 0,
-				}
-				data.append(vals)
-		return data
-
-	def return_data_product(self, data):
-		repeat_barcode = []
-		new_data = []
-		if data:
-			model_product_product = self.env['product.product']
-			for x in data:
-				product = model_product_product.search([('barcode', '=', x['barcode'])])
-				print(product)
-				if len(product) == 1:
-					print(product.name)
-					x['product_id'] = product.id
-				else:
-					
-					#productos que tienen el mismo barcode
-					for repeat in product:
-						repeat_barcode.append(repeat.id)
-		print('productos repetidos')
-		print(repeat_barcode)
-
-		return data
-
-	@api.multi
-	def button_update_lines(self):
-		workbook = open_workbook(file_contents = base64.decodestring(self.excel_file))
-		sheet = workbook.sheets()[0]
-
-		data_excel = []
-
-		for s in workbook.sheets():
-			values = []
-			for row in range(s.nrows):
-				col_value = []
-				for col in range(s.ncols):
-					value  = (s.cell(row,col).value)
-					try:
-						value = str(int(value))
-					except: 
-						pass
-					col_value.append(value)
-				values.append(col_value)
-
-			data_excel = values
-
-		return data_excel
+	filename = fields.Char('Nombre Archivo')
+	document = fields.Binary(string = 'Descargar Excel')
 
 
 	@api.multi
-	def update_qty_line_ids(self):
+	def generate_excel(self):
 
-		data_excel = self.button_update_lines()
+		name_report = "Ajuste de Inventario - " + str(fields.Datetime.from_string(fields.Datetime.now()))
 
-		#print(self.return_column_position(data_excel, 'referencia'))
-		#print(self.return_column_position(data_excel, 'qty'))
+		Header_Text = name_report
+		file_data = BytesIO()
+		workbook = xlsxwriter.Workbook(file_data)
+		worksheet = workbook.add_worksheet(name_report)
+	
+		header_format = workbook.add_format({'bold': 1,'align':'center','valign':'vcenter', 'border':1, 'fg_color':'#f9770c', 'font_size': 18 })
+		format_tittle = workbook.add_format({'bold': 1,'align':'center', 'valign':'vcenter', 'border':1, 'fg_color':'#f9770c', 'font_size': 25 })
+		letter_category = workbook.add_format({'bold': 1,'align':'center','valign':'vcenter', 'border':1, 'fg_color':'#F9CEA9', 'font_size': 16 })
+		letter_pvt = workbook.add_format({'bold': 1,'align':'center','valign':'vcenter', 'border':1, 'fg_color':'#ffe8d8', 'font_size': 15 })
+		letter_number_total = workbook.add_format({'bold': 1,'align':'right','valign':'vcenter', 'num_format': '$#,##0.00', 'border':1, 'fg_color':'#F9CEA9', 'font_size': 16 })
+		
+		letter_left = workbook.add_format({'align':'left', 'font_color': 'black', 'font_size': 14})
+		letter_number = workbook.add_format({'align':'right', 'font_color': 'black', 'num_format': '$#,##0.00', 'font_size': 14})
+		bold = workbook.add_format({'bold': 1,'align':'left','border':1, 'font_size': 14})
 
-		barcode = self.return_column_position(data_excel, 'Inventarios/Producto')
-		qty = self.return_column_position(data_excel, 'line_ids/product_qty')
 
-		data = self.return_product_by_barcode(data_excel, barcode, qty)
-		print(data)
+		worksheet.set_column('A1:A1',35)
+		worksheet.set_column('B1:B1',35)
+		worksheet.set_column('C1:C1',35)
+		worksheet.set_column('D1:C1',35)
+		worksheet.set_column('E1:E1',35)
+		worksheet.set_column('F1:F1',35)
+		worksheet.set_column('G1:G1',55)
+		worksheet.set_column('H1:H1',35)
+		worksheet.set_column('I1:I1',35)
+		worksheet.set_column('J1:J1',35)
+		worksheet.set_column('K1:K1',35)
+		worksheet.set_column('L1:L1',35)
+		worksheet.set_column('M1:J1',35)
+		worksheet.set_column('N1:K1',35)
+		worksheet.set_column('O1:J1',35)
+		worksheet.set_column('P1:K1',35)	
 
-		print(self.return_data_product(data))
+		preview = name_report 
 
-		vals_product = self.return_data_product(data)
+		for i in range(1):
+			
+			if len(self.line_ids) > 0:
 
-		if self.line_ids:
-			for x in vals_product:
-				for line in self.line_ids:
-					if line.product_id.id == x['product_id']:
-						line.product_qty = x['product_qty']
+				worksheet.write('A1', 'Producto', header_format)
+				worksheet.write('B1', 'Unidad de Medida', header_format)
+				worksheet.write('C1', 'Ubicación', header_format)
+				worksheet.write('D1', 'Lote/Nº de Serie', header_format)
+				worksheet.write('E1', 'Paquete', header_format)
+				worksheet.write('F1', 'Propietario', header_format)
+				worksheet.write('G1', 'Cantidad Teorica', header_format)
+				worksheet.write('H1', 'Cantidad Real', header_format)
+				worksheet.write('I1', 'Diferencia', header_format)
+
+				row=1
+				col=0
+
+				for value in self.line_ids:
+
+					worksheet.write(row,col , str(value.product_id.name), letter_left)
+					worksheet.write(row,col+1 , str(value.product_uom_id.name), letter_left)
+					worksheet.write(row,col+2 , str(value.location_id.name), letter_left)
+					worksheet.write(row,col+3 ,  (value.prod_lot_id.name or ''), letter_number)
+					worksheet.write(row,col+4 ,  (value.package_id.name or ''), letter_number)
+					worksheet.write(row,col+5, (value.partner_id.name or ''), letter_number)
+					worksheet.write(row,col+6 , (value.theoretical_qty), letter_number)
+					worksheet.write(row,col+7 ,  value.product_qty, letter_number)
+					worksheet.write(row,col+8 ,  value.diference, letter_number)
+
+					row+=1
+
+
+			workbook.close()
+			file_data.seek(0)
+
+			self.write({'document':base64.encodestring(file_data.read()), 'filename':Header_Text+'.xlsx'})
+
+
+
 
 StockInvetoryInherit()

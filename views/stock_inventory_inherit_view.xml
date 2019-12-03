@@ -7,9 +7,15 @@
 				<field name="inherit_id" ref="stock.view_inventory_form" />
 				<field name="arch" type="xml">
 
-					<xpath expr="//field[@name='company_id']" position="after">
-						<field name="excel_file"/>
-						<button name="button_update_lines" string="Actualizar" type="object" class="btn-primary" attrs="{'invisible': [('excel_file', '=', False)]}"/>
+					<xpath expr="//header//button[4]" position="after">
+						<button name="generate_excel" string="Generar Excel" type="object" class="btn-primary" />
+						<field name="document" readonly="1" filename='filename'/>
+						<field name="filename" readonly="1" invisible="1"/>
+					</xpath>
+
+
+					<xpath expr="//page[1]/field[@name='line_ids']/tree//field[8]" position="after">
+						<field name="diference"/>
 					</xpath>
 
 				</field>

@@ -22,5 +22,25 @@
 #
 ##############################################################################
 
-from . import stock_inventory_inherit
-from . import stock_inventory_line_inherit
+from odoo import api, fields, models, _
+import time
+from datetime import datetime, timedelta, date
+import logging
+_logger = logging.getLogger(__name__)
+from odoo import modules
+from odoo.addons import decimal_precision as dp
+
+
+class StockInvetoryLineInherit(models.Model):
+	
+	_inherit = 'stock.inventory.line'
+
+
+	diference = fields.Float(string="Diferencia", compute="_compute_diference")
+
+	def _compute_diference(self):
+		for x in self:
+			if x.theoretical_qty and x.product_qty:
+				x.diference = x.product_qty - x.theoretical_qty
+	
+StockInvetoryLineInherit()
