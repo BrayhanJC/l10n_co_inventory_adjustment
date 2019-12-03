@@ -40,7 +40,6 @@ class StockInvetoryLineInherit(models.Model):
 
 	def _compute_diference(self):
 		for x in self:
-			if x.theoretical_qty and x.product_qty:
-				x.diference = x.product_qty - x.theoretical_qty
+			x.diference = (x.product_qty or 0) - (x.theoretical_qty or 0)
 	
 StockInvetoryLineInherit()

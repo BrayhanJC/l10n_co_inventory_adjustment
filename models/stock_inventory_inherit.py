@@ -96,14 +96,11 @@ class StockInvetoryInherit(models.Model):
 			if len(self.line_ids) > 0:
 
 				worksheet.write('A1', 'Producto', header_format)
-				worksheet.write('B1', 'Unidad de Medida', header_format)
-				worksheet.write('C1', 'Ubicación', header_format)
-				worksheet.write('D1', 'Lote/Nº de Serie', header_format)
-				worksheet.write('E1', 'Paquete', header_format)
-				worksheet.write('F1', 'Propietario', header_format)
-				worksheet.write('G1', 'Cantidad Teorica', header_format)
-				worksheet.write('H1', 'Cantidad Real', header_format)
-				worksheet.write('I1', 'Diferencia', header_format)
+				worksheet.write('B1', 'Ubicacion', header_format)
+				worksheet.write('C1', 'Cantidad Teorica', header_format)
+				worksheet.write('D1', 'Cantidad Real', header_format)
+				worksheet.write('E1', 'Diferencia', header_format)
+
 
 				row=1
 				col=0
@@ -111,14 +108,10 @@ class StockInvetoryInherit(models.Model):
 				for value in self.line_ids:
 
 					worksheet.write(row,col , str(value.product_id.name), letter_left)
-					worksheet.write(row,col+1 , str(value.product_uom_id.name), letter_left)
-					worksheet.write(row,col+2 , str(value.location_id.name), letter_left)
-					worksheet.write(row,col+3 ,  (value.prod_lot_id.name or ''), letter_number)
-					worksheet.write(row,col+4 ,  (value.package_id.name or ''), letter_number)
-					worksheet.write(row,col+5, (value.partner_id.name or ''), letter_number)
-					worksheet.write(row,col+6 , (value.theoretical_qty), letter_number)
-					worksheet.write(row,col+7 ,  value.product_qty, letter_number)
-					worksheet.write(row,col+8 ,  value.diference, letter_number)
+					worksheet.write(row,col+1 , (value.location_id.location_id.name or '') + '/' + value.location_id.name, letter_left)
+					worksheet.write(row,col+2 , value.theoretical_qty, letter_left)
+					worksheet.write(row,col+3 ,  value.product_qty, letter_number)
+					worksheet.write(row,col+4 ,  value.diference, letter_number)
 
 					row+=1
 
